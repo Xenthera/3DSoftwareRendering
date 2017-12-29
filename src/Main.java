@@ -21,7 +21,7 @@ public class Main extends Game{
     public static void main(String[] args){
 
         game = new Main();
-        game.start("3D Software RenderingEngine", 300,200, 4);
+        game.start("3D Software RenderingEngine", 150,100, 8);
 
     }
 
@@ -42,21 +42,15 @@ public class Main extends Game{
     public void onUpdate(double elapsedTime) {
         dt = (float)elapsedTime;
         game.setTitle(String.valueOf(game.getCurrentFPS()));
+
+
     }
 
 
     @Override
     public void onRender(Renderer renderer) {
-        stars.UpdateAndRender(target, dt);
-        //target.Clear((byte)0x00);
-
-//        for (int j = 100/4; j < 200/4; j++)
-//        {
-//            target.DrawScanBuffer(j, 300/4 - j, 300/4 + j);
-//        }
-
-        //target.FillTriangle(minY, midY, maxY);
-
+        //stars.UpdateAndRender(target, dt);
+        target.Clear((byte)0x00);
         display.SwapBuffers(renderer);
     }
 }
