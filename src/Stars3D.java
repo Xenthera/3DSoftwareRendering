@@ -75,9 +75,9 @@ public class Stars3D {
                     y2 = y;
                 }else if(triCounter == 3){
                     triCounter = 0;
-                    Vertex v1 = new Vertex(x1,y1);
-                    Vertex v2 = new Vertex(x2, y2);
-                    Vertex v3 = new Vertex(x, y);
+                    Vertex v1 = new Vertex(x1,y1,0);
+                    Vertex v2 = new Vertex(x2, y2,0);
+                    Vertex v3 = new Vertex(x, y,0);
 
                     target.FillTriangle(v1,v2,v3);
                 }

@@ -1,7 +1,4 @@
-import RenderingEngine.Bitmap;
-import RenderingEngine.Display;
-import RenderingEngine.RenderContext;
-import RenderingEngine.Vertex;
+import RenderingEngine.*;
 import engine.Game;
 import engine.Renderer;
 
@@ -14,9 +11,11 @@ public class Main extends Game{
 
     Stars3D stars;
 
-    private float dt;
+    private float dt, rotCounter;
 
     Vertex minY, midY, maxY;
+
+    Matrix4f projection;
 
     public static void main(String[] args){
 
@@ -32,9 +31,16 @@ public class Main extends Game{
         target = display.getFrameBuffer();
         stars = new Stars3D(3, 64f, 10f);
 
-        minY = new Vertex(100/4,100/4);
-        midY = new Vertex(150/4,200/4);
-        maxY = new Vertex(80/4, 300/4);
+        minY = new Vertex(-1, -1, 0);
+        midY = new Vertex(0, 1, 0);
+        maxY = new Vertex(1, -1, 0);
+
+        projection = new Matrix4f().InitPerspective((float)Math.toRadians(70f),
+                    (float)target.getWidth()/(float)target.getHeight(),
+                    0.1f, 1000f);
+
+        rotCounter = 0.0f;
+
     }
 
 
@@ -50,7 +56,17 @@ public class Main extends Game{
     @Override
     public void onRender(Renderer renderer) {
         //stars.UpdateAndRender(target, dt);
+
+
+        rotCounter += dt;
+        Matrix4f translation = new Matrix4f().InitTranslation(0.0f,0.0f,3.0f);
+        Matrix4f rotation = new Matrix4f().InitRotation(0.0f, rotCounter, 0.0f);
+        Matrix4f transform = projection.Mul(translation.Mul(rotation));
+
         target.Clear((byte)0x00);
+
+        target.FillTriangle(maxY.Transform(transform), midY.Transform(transform), minY.Transform(transform));
+
         display.SwapBuffers(renderer);
     }
 }

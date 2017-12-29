@@ -29,6 +29,8 @@ public class Matrix4f
         return this;
     }
 
+
+
     public Matrix4f InitTranslation(float x, float y, float z)
     {
         m[0][0] = 1;	m[0][1] = 0;	m[0][2] = 0;	m[0][3] = x;
