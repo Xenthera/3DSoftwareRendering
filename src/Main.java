@@ -9,7 +9,7 @@ public class Main extends Game{
     Display display;
     RenderContext target;
 
-    //Stars3D stars;
+    Stars3D stars;
 
     private float dt, rotCounter;
 
@@ -17,10 +17,12 @@ public class Main extends Game{
 
     Matrix4f projection;
 
+    Bitmap texture;
+
     public static void main(String[] args){
 
         game = new Main();
-        game.start("3D Software RenderingEngine", 300,200, 4);
+        game.start("3D Software RenderingEngine", 150,100, 8);
 
     }
 
@@ -29,11 +31,24 @@ public class Main extends Game{
     public void onCreate() {
         display = new Display(game.getRenderer());
         target = display.getFrameBuffer();
-        //stars = new Stars3D(3, 64f, 10f);
+        stars = new Stars3D(3, 64f, 10f);
 
-        minY = new Vertex(new Vector4f(-1,-1,0,1), new Vector4f(1.0f,0.0f,0.0f,0.0f));
-        midY = new Vertex(new Vector4f( 0, 1,0,1), new Vector4f(0.0f,1.0f,0.0f,0.0f));
-        maxY = new Vertex(new Vector4f( 1,-1,0,1), new Vector4f(0.0f,0.0f,1.0f,0.0f));
+        texture = new Bitmap(32,32);
+
+        for (int j = 0; j < texture.getHeight(); j++)
+        {
+            for (int i = 0; i < texture.getWidth(); i++)
+            {
+                texture.DrawPixel(i, j, (byte)(Math.random() * 255 + 0.5),
+                                        (byte)(Math.random() * 255 + 0.5),
+                                        (byte)(Math.random() * 255 + 0.5),
+                                        (byte)(Math.random() * 255 + 0.5));
+            }
+        }
+
+        minY = new Vertex(new Vector4f(-1,-1,0,1), new Vector4f(0.0f,0.0f,0.0f,0.0f));
+        midY = new Vertex(new Vector4f( 0, 1,0,1), new Vector4f(0.5f,1.0f,0.0f,0.0f));
+        maxY = new Vertex(new Vector4f( 1,-1,0,1), new Vector4f(1.0f,0.0f,1.0f,0.0f));
 
         projection = new Matrix4f().InitPerspective((float)Math.toRadians(70f),
                     (float)target.getWidth()/(float)target.getHeight(),
@@ -60,12 +75,12 @@ public class Main extends Game{
 
         rotCounter += dt;
         Matrix4f translation = new Matrix4f().InitTranslation(0.0f,0.0f,3.0f);
-        Matrix4f rotation = new Matrix4f().InitRotation(0.0f, rotCounter, 0.0f);
+        Matrix4f rotation = new Matrix4f().InitRotation(0.0f, rotCounter, 0f);
         Matrix4f transform = projection.Mul(translation.Mul(rotation));
 
         target.Clear((byte)0x00);
 
-        target.FillTriangle(maxY.Transform(transform), midY.Transform(transform), minY.Transform(transform));
+        target.FillTriangle(maxY.Transform(transform), midY.Transform(transform), minY.Transform(transform), texture);
 
         display.SwapBuffers(renderer);
     }

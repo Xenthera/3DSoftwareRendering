@@ -7,7 +7,7 @@ public class RenderContext extends Bitmap {
         super(width, height);
     }
 
-    public void FillTriangle(Vertex v1, Vertex v2, Vertex v3)
+    public void FillTriangle(Vertex v1, Vertex v2, Vertex v3, Bitmap texture)
     {
         Matrix4f screenSpaceTransform = new Matrix4f().InitScreenSpaceTransform(getWidth() / 2, getHeight() / 2);
         Vertex minY = v1.Transform(screenSpaceTransform).PerspectiveDivide();
@@ -30,22 +30,22 @@ public class RenderContext extends Bitmap {
             midY = temp;
         }
 
-        ScanTriangle(minY,midY,maxY, minY.TriangleAreaTimesTwo(maxY, midY) >= 0);
+        ScanTriangle(minY,midY,maxY, minY.TriangleAreaTimesTwo(maxY, midY) >= 0, texture);
 
     }
 
-    private void ScanTriangle(Vertex minYVert, Vertex midYVert, Vertex maxYVert, boolean handedness)
+    private void ScanTriangle(Vertex minYVert, Vertex midYVert, Vertex maxYVert, boolean handedness, Bitmap texture)
     {
         Gradients gradients = new Gradients(minYVert, midYVert, maxYVert);
         Edge topToBottom    = new Edge(gradients, minYVert, maxYVert, 0);
         Edge topToMiddle    = new Edge(gradients, minYVert, midYVert, 0);
         Edge middleToBottom = new Edge(gradients, midYVert, maxYVert, 1);
 
-        ScanEdges(gradients, topToBottom, topToMiddle, handedness);
-        ScanEdges(gradients, topToBottom, middleToBottom, handedness);
+        ScanEdges(gradients, topToBottom, topToMiddle, handedness, texture);
+        ScanEdges(gradients, topToBottom, middleToBottom, handedness, texture);
     }
 
-    private void ScanEdges(Gradients gradients, Edge a, Edge b, boolean handedness){
+    private void ScanEdges(Gradients gradients, Edge a, Edge b, boolean handedness, Bitmap texture){
         Edge left = a;
         Edge right = b;
 
@@ -59,33 +59,42 @@ public class RenderContext extends Bitmap {
         int yEnd   = b.getYEnd();
 
         for (int j = yStart; j < yEnd; j++) {
-            DrawScanLine(gradients, left, right, j);
+            DrawScanLine(gradients, left, right, j, texture);
             left.Step();
             right.Step();
         }
     }
 
-    private void DrawScanLine(Gradients gradients, Edge left, Edge right, int j)
+    private void DrawScanLine(Gradients gradients, Edge left, Edge right, int j, Bitmap texture)
     {
         int xMin = (int)Math.ceil(left.getX());
         int xMax = (int)Math.ceil(right.getX());
 
-        float xPresetep = xMin - left.getX();
+        float xPrestep = xMin - left.getX();
 
-        Vector4f minColor = left.getColor().Add(gradients.getColorXStep().Mul(xPresetep));
-        Vector4f maxColor = right.getColor().Add(gradients.getColorXStep().Mul(xPresetep));
+        float texCoordX = left.getTexCoordX() + gradients.GetTexCoordXXStep() * xPrestep;
+        float texCoordY = left.getTexCoordY() + gradients.GetTexCoordYXStep() * xPrestep;
 
-        float lerpAmt = 0.0f;
-        float lerpStep = 1.0f/(float)(xMax - xMin);
+
+//        Vector4f minColor = left.getColor().Add(gradients.getColorXStep().Mul(xPresetep));
+//        Vector4f maxColor = right.getColor().Add(gradients.getColorXStep().Mul(xPresetep));
+
+
         for (int i = xMin; i < xMax; i++) {
-            Vector4f color = minColor.Lerp(maxColor, lerpAmt);
 
-            byte r = (byte)(color.GetX() * 255.0f + 0.5f);
-            byte g = (byte)(color.GetY() * 255.0f + 0.5f);
-            byte b = (byte)(color.GetZ() * 255.0f + 0.5f);
+//            byte r = (byte)(color.GetX() * 255.0f + 0.5f);
+//            byte g = (byte)(color.GetY() * 255.0f + 0.5f);
+//            byte b = (byte)(color.GetZ() * 255.0f + 0.5f);
 
-            DrawPixel(i, j, (byte)0xFF, b, g, r);
-            lerpAmt += lerpStep;
+//            DrawPixel(i, j, (byte)0xFF, b, g, r);
+            int srcX = (int)(texCoordX * (texture.getWidth() - 1) + 0.5f);
+            int srcY = (int)(texCoordY * (texture.getWidth() - 1) + 0.5f);
+
+            CopyPixel(i, j, srcX, srcY, texture);
+
+            texCoordX += gradients.GetTexCoordXXStep();
+            texCoordY += gradients.GetTexCoordYXStep();
+
         }
     }
 }
