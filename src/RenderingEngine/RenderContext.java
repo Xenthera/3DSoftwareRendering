@@ -26,7 +26,7 @@ public class RenderContext extends Bitmap {
 
 
             for (int i = xMin; i < xMax; i++) {
-                DrawPixel(i, j, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0xFF);
+                DrawPixel(i, j, (byte)0xFF, (byte)0xFF, (byte)0xFF, (byte)0x00);
             }
         }
     }
@@ -58,7 +58,7 @@ public class RenderContext extends Bitmap {
         int handedness = area >= 0 ? 1 : 0;
 
         ScanConvertTriangle(minY,midY,maxY, handedness);
-        FillShape((int)minY.getY(), (int)maxY.getY());
+        FillShape((int)Math.ceil(minY.getY()), (int)Math.ceil(maxY.getY()));
     }
 
     public void ScanConvertTriangle(Vertex minYVert, Vertex midYVert, Vertex maxYVert, int handedness){
@@ -68,27 +68,28 @@ public class RenderContext extends Bitmap {
     }
 
     private void ScanConvertLine(Vertex minYVert, Vertex maxYVert, int whichSide){
-        int yStart = (int)minYVert.getY();
-        int yEnd =   (int)maxYVert.getY();
-        int xStart = (int)minYVert.getX();
-        int xEnd =   (int)maxYVert.getX();
+        int yStart = (int)Math.ceil(minYVert.getY());
+        int yEnd =   (int)Math.ceil(maxYVert.getY());
+        int xStart = (int)Math.ceil(minYVert.getX());
+        int xEnd =   (int)Math.ceil(maxYVert.getX()) ;
 
-        int yDist = yEnd - yStart;
-        int xDist = xEnd - xStart;
+        float yDist = maxYVert.getY() - minYVert.getY();
+        float xDist = maxYVert.getX() - minYVert.getX();
 
         if(yDist <= 0)
         {
             return;
         }
 
-        float xStep = (float)xDist / (float)yDist;
-        float curX = (float)xStart;
+        float xStep = xDist / yDist;
+        float yPrestep = yStart - minYVert.getY();
+        float curX = minYVert.getX() + yPrestep * xStep;
 
         for (int j = yStart; j < yEnd; j++) {
             if(j * 2 + whichSide >= m_scanBuffer.length) {
                 return;
             }
-            m_scanBuffer[j * 2 + whichSide] = (int)curX;
+            m_scanBuffer[j * 2 + whichSide] = (int)Math.ceil(curX);
             curX += xStep;
         }
     }

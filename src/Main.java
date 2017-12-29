@@ -60,7 +60,7 @@ public class Main extends Game{
 
         rotCounter += dt;
         Matrix4f translation = new Matrix4f().InitTranslation(0.0f,0.0f,3.0f);
-        Matrix4f rotation = new Matrix4f().InitRotation(0.0f, rotCounter, 0.0f);
+        Matrix4f rotation = new Matrix4f().InitRotation((float)getMousePosition().getY()/scale()/10, (float)getMousePosition().getX() / scale() / 10, 0.0f);
         Matrix4f transform = projection.Mul(translation.Mul(rotation));
 
         target.Clear((byte)0x00);
