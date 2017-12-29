@@ -21,7 +21,7 @@ public class Main extends Game{
     public static void main(String[] args){
 
         game = new Main();
-        game.start("3D Software RenderingEngine", 150,100, 8);
+        game.start("3D Software RenderingEngine", 300,200, 4);
 
     }
 
@@ -30,7 +30,7 @@ public class Main extends Game{
     public void onCreate() {
         display = new Display(game.getRenderer());
         target = display.getFrameBuffer();
-        //stars = new Stars3D(4096, 64f, 20f);
+        stars = new Stars3D(3, 64f, 10f);
 
         minY = new Vertex(100/4,100/4);
         midY = new Vertex(150/4,200/4);
@@ -47,15 +47,16 @@ public class Main extends Game{
 
     @Override
     public void onRender(Renderer renderer) {
-        //stars.UpdateAndRender(target, dt);
-        target.Clear((byte)0x00);
+        stars.UpdateAndRender(target, dt);
+        //target.Clear((byte)0x00);
 
 //        for (int j = 100/4; j < 200/4; j++)
 //        {
 //            target.DrawScanBuffer(j, 300/4 - j, 300/4 + j);
 //        }
-        target.ScanConvertTriangle(minY,midY,maxY, 0);
-        target.FillShape(100/4,300/4);
+
+        //target.FillTriangle(minY, midY, maxY);
+
         display.SwapBuffers(renderer);
     }
 }

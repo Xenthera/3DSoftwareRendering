@@ -31,7 +31,34 @@ public class RenderContext extends Bitmap {
         }
     }
 
-    public void FillTriangle
+    public void FillTriangle(Vertex v1, Vertex v2, Vertex v3)
+    {
+        Vertex minY = v1;
+        Vertex midY = v2;
+        Vertex maxY = v3;
+
+        if(maxY.getY() < midY.getY()){
+            Vertex temp = maxY;
+            maxY = midY;
+            midY = temp;
+        }
+        if(midY.getY() < minY.getY()){
+            Vertex temp = midY;
+            midY = minY;
+            minY = temp;
+        }
+        if(maxY.getY() < midY.getY()){
+            Vertex temp = maxY;
+            maxY = midY;
+            midY = temp;
+        }
+
+        float area = minY.TriangleArea(maxY, midY);
+        int handedness = area >= 0 ? 1 : 0;
+
+        ScanConvertTriangle(minY,midY,maxY, handedness);
+        FillShape((int)minY.getY(), (int)maxY.getY());
+    }
 
     public void ScanConvertTriangle(Vertex minYVert, Vertex midYVert, Vertex maxYVert, int handedness){
         ScanConvertLine(minYVert, maxYVert, 0 + handedness);

@@ -20,9 +20,21 @@ public class Vertex {
     }
 
 
-    public Vertex(float x, float y){
+    public Vertex(float x, float y)
+    {
         m_x = x;
         m_y = y;
     }
 
+
+    public float TriangleArea(Vertex b, Vertex c)
+    {
+        float x1 = b.getX() - m_x;
+        float y1 = b.getY() - m_y;
+
+        float x2 = c.getX() - m_x;
+        float y2 = c.getY() - m_y;
+
+        return (x1 * y2 - x2 * y1);
+    }
 }

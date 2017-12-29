@@ -1,4 +1,6 @@
 import RenderingEngine.Bitmap;
+import RenderingEngine.RenderContext;
+import RenderingEngine.Vertex;
 
 public class Stars3D {
 
@@ -34,7 +36,7 @@ public class Stars3D {
 
 
 
-    public void UpdateAndRender(Bitmap target, float delta)
+    public void UpdateAndRender(RenderContext target, float delta)
     {
         final float tanHalfFOV = (float)Math.tan(Math.toRadians(90f/2f));
 
@@ -42,6 +44,12 @@ public class Stars3D {
 
         float halfWidth = target.getWidth()/2.0f;
         float halfHeight = target.getHeight()/2.0f;
+
+        int triCounter = 0;
+        int x1 = 0;
+        int x2 = 0;
+        int y1 = 0;
+        int y2 = 0;
 
         for (int i = 0; i < m_starX.length; i++) {
             m_starZ[i] -= delta * m_speed;
@@ -57,8 +65,26 @@ public class Stars3D {
             {
                 InitStar(i);
             }else {
-                target.DrawPixel(x, y, (byte)0xFF,(byte)0xFF,(byte)0xFF,(byte)0xFF);
+                triCounter++;
+
+                if(triCounter == 1){
+                    x1 = x;
+                    y1 = y;
+                }else if(triCounter == 2){
+                    x2 = x;
+                    y2 = y;
+                }else if(triCounter == 3){
+                    triCounter = 0;
+                    Vertex v1 = new Vertex(x1,y1);
+                    Vertex v2 = new Vertex(x2, y2);
+                    Vertex v3 = new Vertex(x, y);
+
+                    target.FillTriangle(v1,v2,v3);
+                }
             }
+
+
+
         }
 
     }
