@@ -9,7 +9,7 @@ public class Main extends Game{
     Display display;
     RenderContext target;
 
-    Stars3D stars;
+    //Stars3D stars;
 
     private float dt, rotCounter;
 
@@ -20,7 +20,7 @@ public class Main extends Game{
     public static void main(String[] args){
 
         game = new Main();
-        game.start("3D Software RenderingEngine", 150,100, 8);
+        game.start("3D Software RenderingEngine", 300,200, 4);
 
     }
 
@@ -29,11 +29,11 @@ public class Main extends Game{
     public void onCreate() {
         display = new Display(game.getRenderer());
         target = display.getFrameBuffer();
-        stars = new Stars3D(3, 64f, 10f);
+        //stars = new Stars3D(3, 64f, 10f);
 
-        minY = new Vertex(-1, -1, 0);
-        midY = new Vertex(0, 1, 0);
-        maxY = new Vertex(1, -1, 0);
+        minY = new Vertex(new Vector4f(-1,-1,0,1), new Vector4f(1.0f,0.0f,0.0f,0.0f));
+        midY = new Vertex(new Vector4f( 0, 1,0,1), new Vector4f(0.0f,1.0f,0.0f,0.0f));
+        maxY = new Vertex(new Vector4f( 1,-1,0,1), new Vector4f(0.0f,0.0f,1.0f,0.0f));
 
         projection = new Matrix4f().InitPerspective((float)Math.toRadians(70f),
                     (float)target.getWidth()/(float)target.getHeight(),
