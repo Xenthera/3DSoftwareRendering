@@ -7,26 +7,26 @@ import java.io.IOException;
 public class Main extends Game{
 
     static Main game;
-
     Display display;
     RenderContext target;
 
-    Stars3D stars;
+    Mesh monkeyMesh, terrainMesh;
+    Bitmap texture, texture2;
 
-    Mesh mesh;
+    Transform monkeyTransform, terrainTransform;
+
+    Camera camera;
+
+    static Input input;
 
     private float dt, rotCounter;
 
-    Vertex minY, midY, maxY;
 
-    Matrix4f projection;
-
-    Bitmap texture;
 
     public static void main(String[] args){
-
+        input = new Input();
         game = new Main();
-        game.start("3D Software RenderingEngine", 300,200, 4);
+        game.start(input,"3D Software RenderingEngine", 300,200, 4);
 
     }
 
@@ -35,41 +35,22 @@ public class Main extends Game{
     public void onCreate() {
         display = new Display(game.getRenderer());
         target = display.getFrameBuffer();
-        stars = new Stars3D(3, 64f, 10f);
+
 
         try {
-            mesh = new Mesh("./res/monkey.obj");
+            monkeyMesh = new Mesh("./res/monkey.obj");
+            terrainMesh = new Mesh("/Users/bobbylucero/IdeaProjects/3DSoftwareRendering/res/terrain.obj");
             texture = new Bitmap("./res/bricks.jpg");
+            texture2 = new Bitmap("./res/bricks2.jpg");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        monkeyTransform = new Transform(new Vector4f(0.0f,0.0f,0.0f));
+        terrainTransform = new Transform(new Vector4f(0.0f,-1.0f,0.0f));
 
-//
-//        for (int j = 0; j < texture.getHeight(); j++)
-//        {
-//            for (int i = 0; i < texture.getWidth(); i++)
-//            {
-//                texture.DrawPixel(i, j, (byte)(Math.random() * 255 + 0.5),
-//                                        (byte)(Math.random() * 255 + 0.5),
-//                                        (byte)(Math.random() * 255 + 0.5),
-//                                        (byte)(Math.random() * 255 + 0.5));
-//            }
-//        }
-//
-//        texture = new Bitmap(2,2);
-//        texture.DrawPixel(0, 0,  (byte)0x00, (byte)0x00, (byte)0x00, (byte)0xFF);
-//        texture.DrawPixel(0, 1,  (byte)0x00, (byte)0x00, (byte)0xFF, (byte)0x00);
-//        texture.DrawPixel(1, 0,  (byte)0x00, (byte)0xFF, (byte)0x00, (byte)0x00);
-//        texture.DrawPixel(1, 1,  (byte)0x00, (byte)0x00, (byte)0xFF, (byte)0xFF);
+        camera = new Camera(new Matrix4f().InitPerspective((float)Math.toRadians(70.0f), (float)target.getWidth() / (float)target.getHeight(), 0.1f, 1000f));
 
-        minY = new Vertex(new Vector4f(-1,-1,0,1), new Vector4f(0.0f,0.0f,0.0f,0.0f));
-        midY = new Vertex(new Vector4f( 0, 1,0,1), new Vector4f(0.5f,1.0f,0.0f,0.0f));
-        maxY = new Vertex(new Vector4f( 1,-1,0,1), new Vector4f(1.0f,0.0f,1.0f,0.0f));
-
-        projection = new Matrix4f().InitPerspective((float)Math.toRadians(70f),
-                    (float)target.getWidth()/(float)target.getHeight(),
-                    0.1f, 1000f);
 
         rotCounter = 0.0f;
 
@@ -91,14 +72,16 @@ public class Main extends Game{
 
 
         rotCounter += dt;
-        Matrix4f translation = new Matrix4f().InitTranslation(0.0f,0.0f,3.0f - 3 * (float)Math.sin(rotCounter));
-        Matrix4f rotation = new Matrix4f().InitRotation(0.0f, rotCounter, 0.0f);
-        Matrix4f transform = projection.Mul(translation.Mul(rotation));
+        camera.Update(game.input, dt);
+        Matrix4f vp = camera.GetViewProjection();
+
+        monkeyTransform = monkeyTransform.Rotate(new Quaternion(new Vector4f(0,1,0), dt));
 
         target.Clear((byte)0x00);
         target.clearDepthBuffer();
 
-        mesh.Draw(target, transform, texture);
+        monkeyMesh.Draw(target, vp.Mul(monkeyTransform.GetTransformation()), monkeyTransform.GetTransformation(), texture2);
+        terrainMesh.Draw(target, vp.Mul(terrainTransform.GetTransformation()), terrainTransform.GetTransformation(), texture);
 
         display.SwapBuffers(renderer);
     }

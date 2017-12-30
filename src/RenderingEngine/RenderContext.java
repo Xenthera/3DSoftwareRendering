@@ -77,7 +77,7 @@ public class RenderContext extends Bitmap {
                 float lerpAmt = (previousVertex.getPos().GetW() - previousComponent) /
                         ((previousVertex.getPos().GetW() - previousComponent) - (currentVertex.getPos().GetW() - currentComponent));
 
-                result.add(previousVertex.lerp(currentVertex, lerpAmt));
+                result.add(previousVertex.Lerp(currentVertex, lerpAmt));
             }
 
             if(currentInside){
@@ -96,9 +96,10 @@ public class RenderContext extends Bitmap {
     private void FillTriangle(Vertex v1, Vertex v2, Vertex v3, Bitmap texture)
     {
         Matrix4f screenSpaceTransform = new Matrix4f().InitScreenSpaceTransform(getWidth() / 2, getHeight() / 2);
-        Vertex minY = v1.Transform(screenSpaceTransform).PerspectiveDivide();
-        Vertex midY = v2.Transform(screenSpaceTransform).PerspectiveDivide();
-        Vertex maxY = v3.Transform(screenSpaceTransform).PerspectiveDivide();
+        Matrix4f identity = new Matrix4f().InitIdentity();
+        Vertex minY = v1.Transform(screenSpaceTransform, identity).PerspectiveDivide();
+        Vertex midY = v2.Transform(screenSpaceTransform, identity).PerspectiveDivide();
+        Vertex maxY = v3.Transform(screenSpaceTransform, identity).PerspectiveDivide();
 
         if(minY.TriangleAreaTimesTwo(maxY, midY) >= 0){return;}
 

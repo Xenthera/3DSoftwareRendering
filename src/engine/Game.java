@@ -1,5 +1,7 @@
 package engine;
 
+import RenderingEngine.Input;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -65,6 +67,8 @@ public abstract class Game extends Canvas implements Runnable {
 
     private float currentFPS = 0;
 	private float currentUPS = 0;
+
+	public RenderingEngine.Input input;
 	// End Stats
 	
 	/**
@@ -75,11 +79,12 @@ public abstract class Game extends Canvas implements Runnable {
 	 * @param height How many pixels the screen should be high.
 	 * @param scale How many physical pixels on the screen should each pixel display as.
 	 */
-	protected void start(String title, int width, int height, int scale) {
-		start(title, width, height, scale, false);
+	protected void start(Input input, String title, int width, int height, int scale) {
+		start(input, title, width, height, scale, false);
 	}
-	
-	/**
+
+
+    /**
 	 * Creates the window and instantiates all required objects for the program
 	 * to run.
 	 * @param title The title of the window.
@@ -88,12 +93,13 @@ public abstract class Game extends Canvas implements Runnable {
 	 * @param scale How many physical pixels on the screen should each pixel display as.
 	 * @param debug Whether or now to display debug information in the corner of the screen.
 	 */
-	protected void start(String title, int width, int height, int scale, boolean debug) {
+	protected void start(Input input, String title, int width, int height, int scale, boolean debug) {
 		this.width = width;
 		this.height = height;
 		this.scale = scale;
 		this.title = title;
 		this.debug = debug;
+		this.input = input;
 		
 		Dimension size = new Dimension(width * scale, height * scale);
 		setPreferredSize(size);
@@ -123,9 +129,10 @@ public abstract class Game extends Canvas implements Runnable {
 		});
 
 		setFocusTraversalKeysEnabled(false);
-		addKeyListener(new Input.Keyboard());
-		addMouseListener(new Input.Mouse());
-		addMouseMotionListener(new Input.Mouse());
+		addKeyListener(this.input);
+		//addFocusListener(this.input);
+		addMouseListener(this.input);
+		addMouseMotionListener(this.input);
 		
 		frame.setResizable(false);
 		frame.setTitle(title);

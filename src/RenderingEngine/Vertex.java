@@ -4,6 +4,7 @@ public class Vertex {
 
     private Vector4f m_pos;
     private Vector4f m_texCoords;
+    private Vector4f m_normal;
 
     public float getX() {
         return m_pos.GetX();
@@ -13,27 +14,29 @@ public class Vertex {
     public Vector4f getPos() {
         return m_pos;
     }
+    public Vector4f GetNormal() { return m_normal; }
 
     public Vector4f GetTexCoords() {
         return m_texCoords;
     }
 
-    public Vertex(Vector4f pos, Vector4f texCoords)
-    {
+    public Vertex(Vector4f pos, Vector4f texCoords, Vector4f normal) {
         m_pos = pos;
         m_texCoords = texCoords;
+        m_normal = normal;
     }
 
-    public Vertex Transform(Matrix4f transform)
+    public Vertex Transform(Matrix4f transform, Matrix4f normalTransform)
     {
-        return new Vertex(transform.Transform(m_pos), m_texCoords);
+        // The normalized here is important if you're doing scaling.
+        return new Vertex(transform.Transform(m_pos), m_texCoords,
+                normalTransform.Transform(m_normal).Normalized());
     }
-
     public Vertex PerspectiveDivide(){
         return new Vertex(new Vector4f(m_pos.GetX()/m_pos.GetW(),m_pos.GetY()/m_pos.GetW()
                          ,m_pos.GetZ()/m_pos.GetW(),m_pos.GetW()),
 
-                m_texCoords);
+                m_texCoords, m_normal);
     }
 
 
@@ -48,8 +51,13 @@ public class Vertex {
         return (x1 * y2 - x2 * y1);
     }
 
-    public Vertex lerp(Vertex other, float amt){
-        return new Vertex(m_pos.Lerp(other.getPos(), amt), m_texCoords.Lerp(other.GetTexCoords(), amt));
+    public Vertex Lerp(Vertex other, float lerpAmt)
+    {
+        return new Vertex(
+                m_pos.Lerp(other.getPos(), lerpAmt),
+                m_texCoords.Lerp(other.GetTexCoords(), lerpAmt),
+                m_normal.Lerp(other.GetNormal(), lerpAmt)
+        );
     }
 
     public boolean isInsideViewFrustum(){

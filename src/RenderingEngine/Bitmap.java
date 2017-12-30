@@ -42,9 +42,9 @@ public class Bitmap {
         for (int i = 0; i < width * height; i++) {
             int pixel = imgPixels[i];
             components[i * 4]     = (byte)((pixel >> 24) & 0xFF);
-            components[i * 4 + 1] = (byte)((pixel      ) & 0xFF);
+            components[i * 4 + 1] = (byte)((pixel >> 16 ) & 0xFF);
             components[i * 4 + 2] = (byte)((pixel >> 8 ) & 0xFF);
-            components[i * 4 + 3] = (byte)((pixel >> 16) & 0xFF);
+            components[i * 4 + 3] = (byte)((pixel      ) & 0xFF);
         }
 
         m_width = width;
