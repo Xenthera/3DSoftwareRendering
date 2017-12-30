@@ -2,9 +2,27 @@ package RenderingEngine;
 
 public class RenderContext extends Bitmap {
 
+    private float[] m_zBuffer;
+
     public RenderContext(int width, int height)
     {
         super(width, height);
+        m_zBuffer = new float[width * height];
+    }
+
+    public void clearDepthBuffer(){
+        for (int i = 0; i < m_zBuffer.length; i++) {
+            m_zBuffer[i] = Float.MAX_VALUE;
+        }
+    }
+
+    public void DrawMesh(Mesh mesh, Matrix4f transform, Bitmap texture){
+        for (int i = 0; i < mesh.getNumIndicies(); i += 3) {
+            FillTriangle(mesh.getVertex(mesh.getIndex(i)).Transform(transform),
+                         mesh.getVertex(mesh.getIndex(i + 1)).Transform(transform),
+                         mesh.getVertex(mesh.getIndex(i + 2)).Transform(transform),
+                         texture);
+        }
     }
 
     public void FillTriangle(Vertex v1, Vertex v2, Vertex v3, Bitmap texture)
@@ -13,6 +31,8 @@ public class RenderContext extends Bitmap {
         Vertex minY = v1.Transform(screenSpaceTransform).PerspectiveDivide();
         Vertex midY = v2.Transform(screenSpaceTransform).PerspectiveDivide();
         Vertex maxY = v3.Transform(screenSpaceTransform).PerspectiveDivide();
+
+        if(minY.TriangleAreaTimesTwo(maxY, midY) >= 0){return;}
 
         if(maxY.getY() < midY.getY()){
             Vertex temp = maxY;
@@ -76,22 +96,31 @@ public class RenderContext extends Bitmap {
         float texCoordXXStep = (right.getTexCoordX() - left.getTexCoordX()) / xDist;
         float texCoordYXStep = (right.getTexCoordY() - left.getTexCoordY()) / xDist;
         float oneOverZXStep =  (right.GetOneOverZ() - left.GetOneOverZ())/xDist;
+        float depthXStep =  (right.GetDepth() - left.GetDepth())/xDist;
 
         float texCoordX = left.getTexCoordX() + texCoordXXStep * xPrestep;
         float texCoordY = left.getTexCoordY() + texCoordYXStep * xPrestep;
         float oneOverZ = left.GetOneOverZ() + oneOverZXStep * xPrestep;
+        float depth = left.GetDepth() + depthXStep * xPrestep;
 
         for (int i = xMin; i < xMax; i++) {
 
-            float z = 1.0f/oneOverZ;
-            int srcX = (int)((texCoordX * z) * (texture.getWidth() - 1) + 0.5f);
-            int srcY = (int)((texCoordY * z) * (texture.getHeight() - 1) + 0.5f);
+            int index = i + j * getWidth();
 
-            CopyPixel(i, j, srcX, srcY, texture);
+            if(depth < m_zBuffer[index])
+            {
+                m_zBuffer[index] = depth;
+                float z = 1.0f / oneOverZ;
+                int srcX = (int) ((texCoordX * z) * (texture.getWidth() - 1) + 0.5f);
+                int srcY = (int) ((texCoordY * z) * (texture.getHeight() - 1) + 0.5f);
+
+                CopyPixel(i, j, srcX, srcY, texture);
+            }
+
             oneOverZ += oneOverZXStep;
             texCoordX += texCoordXXStep;
             texCoordY += texCoordYXStep;
-
+            depth += depthXStep;
         }
     }
 }

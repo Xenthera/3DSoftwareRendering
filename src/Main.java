@@ -2,6 +2,8 @@ import RenderingEngine.*;
 import engine.Game;
 import engine.Renderer;
 
+import java.io.IOException;
+
 public class Main extends Game{
 
     static Main game;
@@ -10,6 +12,8 @@ public class Main extends Game{
     RenderContext target;
 
     Stars3D stars;
+
+    Mesh mesh;
 
     private float dt, rotCounter;
 
@@ -33,18 +37,25 @@ public class Main extends Game{
         target = display.getFrameBuffer();
         stars = new Stars3D(3, 64f, 10f);
 
-        texture = new Bitmap(32,32);
-
-        for (int j = 0; j < texture.getHeight(); j++)
-        {
-            for (int i = 0; i < texture.getWidth(); i++)
-            {
-                texture.DrawPixel(i, j, (byte)(Math.random() * 255 + 0.5),
-                                        (byte)(Math.random() * 255 + 0.5),
-                                        (byte)(Math.random() * 255 + 0.5),
-                                        (byte)(Math.random() * 255 + 0.5));
-            }
+        try {
+            mesh = new Mesh("./res/monkey.obj");
+            texture = new Bitmap("./res/bricks.jpg");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+
+//
+//        for (int j = 0; j < texture.getHeight(); j++)
+//        {
+//            for (int i = 0; i < texture.getWidth(); i++)
+//            {
+//                texture.DrawPixel(i, j, (byte)(Math.random() * 255 + 0.5),
+//                                        (byte)(Math.random() * 255 + 0.5),
+//                                        (byte)(Math.random() * 255 + 0.5),
+//                                        (byte)(Math.random() * 255 + 0.5));
+//            }
+//        }
 //
 //        texture = new Bitmap(2,2);
 //        texture.DrawPixel(0, 0,  (byte)0x00, (byte)0x00, (byte)0x00, (byte)0xFF);
@@ -81,12 +92,13 @@ public class Main extends Game{
 
         rotCounter += dt;
         Matrix4f translation = new Matrix4f().InitTranslation(0.0f,0.0f,3.0f);
-        Matrix4f rotation = new Matrix4f().InitRotation(0.0f, rotCounter, 0f);
+        Matrix4f rotation = new Matrix4f().InitRotation(0.0f, rotCounter, 0.0f);
         Matrix4f transform = projection.Mul(translation.Mul(rotation));
 
         target.Clear((byte)0x00);
+        target.clearDepthBuffer();
 
-        target.FillTriangle(maxY.Transform(transform), midY.Transform(transform), minY.Transform(transform), texture);
+        target.DrawMesh(mesh, transform, texture);
 
         display.SwapBuffers(renderer);
     }
