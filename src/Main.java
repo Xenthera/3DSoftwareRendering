@@ -91,14 +91,14 @@ public class Main extends Game{
 
 
         rotCounter += dt;
-        Matrix4f translation = new Matrix4f().InitTranslation(0.0f,0.0f,3.0f);
+        Matrix4f translation = new Matrix4f().InitTranslation(0.0f,0.0f,3.0f - 3 * (float)Math.sin(rotCounter));
         Matrix4f rotation = new Matrix4f().InitRotation(0.0f, rotCounter, 0.0f);
         Matrix4f transform = projection.Mul(translation.Mul(rotation));
 
         target.Clear((byte)0x00);
         target.clearDepthBuffer();
 
-        target.DrawMesh(mesh, transform, texture);
+        mesh.Draw(target, transform, texture);
 
         display.SwapBuffers(renderer);
     }

@@ -1,5 +1,9 @@
 package RenderingEngine;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 public class RenderContext extends Bitmap {
 
     private float[] m_zBuffer;
@@ -16,16 +20,80 @@ public class RenderContext extends Bitmap {
         }
     }
 
-    public void DrawMesh(Mesh mesh, Matrix4f transform, Bitmap texture){
-        for (int i = 0; i < mesh.getNumIndicies(); i += 3) {
-            FillTriangle(mesh.getVertex(mesh.getIndex(i)).Transform(transform),
-                         mesh.getVertex(mesh.getIndex(i + 1)).Transform(transform),
-                         mesh.getVertex(mesh.getIndex(i + 2)).Transform(transform),
-                         texture);
+    public void DrawTriangle(Vertex v1, Vertex v2, Vertex v3, Bitmap texture){
+        if(v1.isInsideViewFrustum() && v2.isInsideViewFrustum() && v3.isInsideViewFrustum()){
+            FillTriangle(v1, v2, v3, texture);
+            return;
+        }
+
+
+        List<Vertex> vertices = new ArrayList<>();
+        List<Vertex> auxList = new ArrayList<>();
+
+        vertices.add(v1);
+        vertices.add(v2);
+        vertices.add(v3);
+
+        if(ClipPolygonAxis(vertices, auxList, 0) &&
+                ClipPolygonAxis(vertices, auxList, 1) &&
+                ClipPolygonAxis(vertices, auxList, 2))
+        {
+            Vertex initialVertex = vertices.get(0);
+
+            for (int i = 0; i < vertices.size() - 1; i++) {
+                FillTriangle(initialVertex, vertices.get(i), vertices.get(i + 1), texture);
+            }
         }
     }
 
-    public void FillTriangle(Vertex v1, Vertex v2, Vertex v3, Bitmap texture)
+    private boolean ClipPolygonAxis(List<Vertex> vertices, List<Vertex> auxList, int componentIndex){
+        ClipPolygonComponent(vertices, componentIndex, 1.0f, auxList);
+        vertices.clear();
+        if(auxList.isEmpty()){
+            return false;
+        }
+
+        ClipPolygonComponent(auxList, componentIndex, -1.0f, vertices);
+        auxList.clear();
+
+        return !vertices.isEmpty();
+    }
+
+    private void ClipPolygonComponent(List<Vertex> vertices, int componentIndex, float componentFactor
+                , List<Vertex> result){
+
+        Vertex previousVertex = vertices.get(vertices.size()-1);
+        float previousComponent = previousVertex.Get(componentIndex) * componentFactor;
+        boolean previousInside = previousComponent <= previousVertex.getPos().GetW();
+
+        Iterator<Vertex> it = vertices.iterator();
+
+        while(it.hasNext()){
+            Vertex currentVertex = it.next();
+            float currentComponent = currentVertex.Get(componentIndex) * componentFactor;
+            boolean currentInside = currentComponent <= currentVertex.getPos().GetW();
+
+            if(currentInside ^ previousInside){
+                float lerpAmt = (previousVertex.getPos().GetW() - previousComponent) /
+                        ((previousVertex.getPos().GetW() - previousComponent) - (currentVertex.getPos().GetW() - currentComponent));
+
+                result.add(previousVertex.lerp(currentVertex, lerpAmt));
+            }
+
+            if(currentInside){
+                result.add(currentVertex);
+            }
+
+            previousVertex = currentVertex;
+            previousComponent = currentComponent;
+            previousInside = currentInside;
+        }
+
+    }
+
+
+
+    private void FillTriangle(Vertex v1, Vertex v2, Vertex v3, Bitmap texture)
     {
         Matrix4f screenSpaceTransform = new Matrix4f().InitScreenSpaceTransform(getWidth() / 2, getHeight() / 2);
         Vertex minY = v1.Transform(screenSpaceTransform).PerspectiveDivide();
