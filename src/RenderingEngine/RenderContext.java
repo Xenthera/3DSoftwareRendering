@@ -41,11 +41,11 @@ public class RenderContext extends Bitmap {
         Edge topToMiddle    = new Edge(gradients, minYVert, midYVert, 0);
         Edge middleToBottom = new Edge(gradients, midYVert, maxYVert, 1);
 
-        ScanEdges(gradients, topToBottom, topToMiddle, handedness, texture);
-        ScanEdges(gradients, topToBottom, middleToBottom, handedness, texture);
+        ScanEdges(topToBottom, topToMiddle, handedness, texture);
+        ScanEdges(topToBottom, middleToBottom, handedness, texture);
     }
 
-    private void ScanEdges(Gradients gradients, Edge a, Edge b, boolean handedness, Bitmap texture){
+    private void ScanEdges(Edge a, Edge b, boolean handedness, Bitmap texture){
         Edge left = a;
         Edge right = b;
 
@@ -59,41 +59,38 @@ public class RenderContext extends Bitmap {
         int yEnd   = b.getYEnd();
 
         for (int j = yStart; j < yEnd; j++) {
-            DrawScanLine(gradients, left, right, j, texture);
+            DrawScanLine(left, right, j, texture);
             left.Step();
             right.Step();
         }
     }
 
-    private void DrawScanLine(Gradients gradients, Edge left, Edge right, int j, Bitmap texture)
+    private void DrawScanLine(Edge left, Edge right, int j, Bitmap texture)
     {
         int xMin = (int)Math.ceil(left.getX());
         int xMax = (int)Math.ceil(right.getX());
 
         float xPrestep = xMin - left.getX();
 
-        float texCoordX = left.getTexCoordX() + gradients.GetTexCoordXXStep() * xPrestep;
-        float texCoordY = left.getTexCoordY() + gradients.GetTexCoordYXStep() * xPrestep;
+        float xDist = right.getX() - left.getX();
+        float texCoordXXStep = (right.getTexCoordX() - left.getTexCoordX()) / xDist;
+        float texCoordYXStep = (right.getTexCoordY() - left.getTexCoordY()) / xDist;
+        float oneOverZXStep =  (right.GetOneOverZ() - left.GetOneOverZ())/xDist;
 
-
-//        Vector4f minColor = left.getColor().Add(gradients.getColorXStep().Mul(xPresetep));
-//        Vector4f maxColor = right.getColor().Add(gradients.getColorXStep().Mul(xPresetep));
-
+        float texCoordX = left.getTexCoordX() + texCoordXXStep * xPrestep;
+        float texCoordY = left.getTexCoordY() + texCoordYXStep * xPrestep;
+        float oneOverZ = left.GetOneOverZ() + oneOverZXStep * xPrestep;
 
         for (int i = xMin; i < xMax; i++) {
 
-//            byte r = (byte)(color.GetX() * 255.0f + 0.5f);
-//            byte g = (byte)(color.GetY() * 255.0f + 0.5f);
-//            byte b = (byte)(color.GetZ() * 255.0f + 0.5f);
-
-//            DrawPixel(i, j, (byte)0xFF, b, g, r);
-            int srcX = (int)(texCoordX * (texture.getWidth() - 1) + 0.5f);
-            int srcY = (int)(texCoordY * (texture.getWidth() - 1) + 0.5f);
+            float z = 1.0f/oneOverZ;
+            int srcX = (int)((texCoordX * z) * (texture.getWidth() - 1) + 0.5f);
+            int srcY = (int)((texCoordY * z) * (texture.getHeight() - 1) + 0.5f);
 
             CopyPixel(i, j, srcX, srcY, texture);
-
-            texCoordX += gradients.GetTexCoordXXStep();
-            texCoordY += gradients.GetTexCoordYXStep();
+            oneOverZ += oneOverZXStep;
+            texCoordX += texCoordXXStep;
+            texCoordY += texCoordYXStep;
 
         }
     }

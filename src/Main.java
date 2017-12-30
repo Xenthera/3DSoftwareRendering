@@ -22,7 +22,7 @@ public class Main extends Game{
     public static void main(String[] args){
 
         game = new Main();
-        game.start("3D Software RenderingEngine", 150,100, 8);
+        game.start("3D Software RenderingEngine", 300,200, 4);
 
     }
 
@@ -45,6 +45,12 @@ public class Main extends Game{
                                         (byte)(Math.random() * 255 + 0.5));
             }
         }
+//
+//        texture = new Bitmap(2,2);
+//        texture.DrawPixel(0, 0,  (byte)0x00, (byte)0x00, (byte)0x00, (byte)0xFF);
+//        texture.DrawPixel(0, 1,  (byte)0x00, (byte)0x00, (byte)0xFF, (byte)0x00);
+//        texture.DrawPixel(1, 0,  (byte)0x00, (byte)0xFF, (byte)0x00, (byte)0x00);
+//        texture.DrawPixel(1, 1,  (byte)0x00, (byte)0x00, (byte)0xFF, (byte)0xFF);
 
         minY = new Vertex(new Vector4f(-1,-1,0,1), new Vector4f(0.0f,0.0f,0.0f,0.0f));
         midY = new Vertex(new Vector4f( 0, 1,0,1), new Vector4f(0.5f,1.0f,0.0f,0.0f));

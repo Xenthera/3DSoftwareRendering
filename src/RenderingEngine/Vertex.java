@@ -10,6 +10,10 @@ public class Vertex {
     }
     public float getY() { return m_pos.GetY(); }
 
+    public Vector4f getPos() {
+        return m_pos;
+    }
+
     public Vector4f GetTexCoords() {
         return m_texCoords;
     }
